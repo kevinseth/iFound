@@ -33,19 +33,22 @@ public class AuthRestController {
                 )
             );
 
-            // 🛡️ Simulate or generate a token (for now just a dummy string)
-            String token = "dummy-jwt-token-123456"; // Replace with real token later if needed
-            String sessionId = request.getSession().getId(); // 🔐 get session ID
-            // ✅ Store token in session
-            request.getSession().setAttribute("token", token);
+            String token = JwtUtility.generateToken(authentication);
+            request.getSession().setAttribute("jwtToken", token);
 
-            return ResponseEntity.ok(Map.of("Session",sessionId,"message", "Login successful", "token", token));
+            System.out.println("Session ID at login: " + request.getSession().getId());
+            System.out.println("JWT stored in session: " + token);
+
+            return ResponseEntity.ok(Map.of(
+                "sessionId", request.getSession().getId(),
+                "message", "Login successful",
+                "token", token
+            ));
         } catch (AuthenticationException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(Map.of("error", "Invalid username or password"));
         }
     }
-
 
 
 }

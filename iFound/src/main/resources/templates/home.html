@@ -2,18 +2,49 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Home</title>
+
+    <!-- ✅ Include jQuery and DataTables CSS/JS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 </head>
 <body>
-    <h1>Welcome, you are now logged in!</h1>
+    <h1>Welcome!</h1>
 
-    <p><strong>Session ID:</strong> <span th:text="${sessionId}">[Session ID]</span></p>
+    <p><strong>JWT Token:</strong> <span th:text="${token}">[token]</span></p>
+    <p><strong>Session ID:</strong> <span th:text="${sessionId}">[session]</span></p>
 
-    <p><strong>Your Token:</strong></p>
-    <textarea rows="5" cols="60" readonly th:text="${token}"></textarea>
-
-    <p>Your token: <b th:text="${token}">[token]</b></p>
+    <!-- ✅ Only show table if users are available -->
+    <h2 th:if="${users != null}">All Users:</h2>
+    <table th:if="${users != null}" id="userTable" class="display">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Password</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.id}">1</td>
+                <td th:text="${user.username}">Username</td>
+                <td th:text="${user.password}">Password</td>
+            </tr>
+        </tbody>
+    </table>
 
     <br><br>
     <a href="/logout">Logout</a>
+
+    <!-- ✅ jQuery and DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        // ✅ Initialize DataTable only if the table exists
+        document.addEventListener("DOMContentLoaded", function () {
+            if (document.getElementById('userTable')) {
+                $('#userTable').DataTable();
+            }
+        });
+    </script>
 </body>
 </html>

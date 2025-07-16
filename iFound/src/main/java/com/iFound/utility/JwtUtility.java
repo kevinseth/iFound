@@ -2,28 +2,31 @@ package com.iFound.utility;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.spec.SecretKeySpec;
-import java.security.Key;
+import javax.crypto.SecretKey;
 import java.util.Date;
+
 
 @Component
 public class JwtUtility {
 
-    private final String SECRET = "superSecretKey1234567890!@#$%";  // Use a strong raw string
-    private final long EXPIRATION_TIME = 60 * 60 * 1000; // 1 hour
+    // ✅ Use a fixed, Base64-decoded secret key string (must be at least 64 bytes for HS512)
+    private static final String SECRET = "gYkRr7vG8bM2qWpXtEjLwNeQzHbUdXiAjCnKpTrVsYwMzPbQzHgJkLmNoPqRsTuVw"; // 64+ chars
+    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    private Key getSigningKey() {
-        return new SecretKeySpec(SECRET.getBytes(), SignatureAlgorithm.HS256.getJcaName());
-    }
+    public static String generateToken(Authentication authentication) {
+        String username = authentication.getName();
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + 86400000); // 1 day expiry
 
-    public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(SECRET_KEY, SignatureAlgorithm.HS512)
                 .compact();
     }
 }
