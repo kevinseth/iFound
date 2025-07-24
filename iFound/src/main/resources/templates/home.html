@@ -1,50 +1,115 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Home</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>iFound - Lost & Found Document System</title>
 
-    <!-- ✅ Include jQuery and DataTables CSS/JS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <style>
+    body {
+      background-color: #f0f4f8;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .hero-section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      position: relative;
+    }
+
+    .logout-form {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+
+    .hero-card {
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+      padding: 50px 30px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .hero-card h1 {
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .hero-card p {
+      font-size: 1.1rem;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .hero-card .btn {
+      padding: 12px 24px;
+      font-size: 1.1rem;
+      border-radius: 10px;
+    }
+
+    .btn-lost {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .btn-found {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .btn:hover {
+      opacity: 0.92;
+      transform: scale(1.02);
+      transition: all 0.2s ease;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.85rem;
+      color: #888;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <h1>Welcome!</h1>
 
-    <p><strong>JWT Token:</strong> <span th:text="${token}">[token]</span></p>
-    <p><strong>Session ID:</strong> <span th:text="${sessionId}">[session]</span></p>
+<section class="hero-section">
 
-    <!-- ✅ Only show table if users are available -->
-    <h2 th:if="${users != null}">All Users:</h2>
-    <table th:if="${users != null}" id="userTable" class="display">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Password</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="user : ${users}">
-                <td th:text="${user.id}">1</td>
-                <td th:text="${user.username}">Username</td>
-                <td th:text="${user.password}">Password</td>
-            </tr>
-        </tbody>
-    </table>
+  <!-- 🔐 Logout form -->
+  <form th:action="@{/logout}" method="post" class="logout-form">
+    <input type="submit" value="Logout" class="btn btn-outline-danger btn-sm" />
+  </form>
 
-    <br><br>
-    <a href="/logout">Logout</a>
+  <div class="hero-card">
+    <h1>Welcome to <span class="text-primary">iFound</span></h1>
+    <p>Your trusted system to report and recover lost documents.</p>
+    <p>Welcome, <strong th:text="${username}"></strong>!</p>
 
-    <!-- ✅ jQuery and DataTables JS -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <div class="d-grid gap-3 mx-auto col-10 col-sm-8">
+      <a href="report-lost" class="btn btn-danger">Report Lost Document</a>
+      <a href="report-found.html" class="btn btn-success">Report Found Document</a>
+      <a th:href="@{/check-status}" class="btn btn-info text-white">Check Document Status</a>
 
-    <script>
-        // ✅ Initialize DataTable only if the table exists
-        document.addEventListener("DOMContentLoaded", function () {
-            if (document.getElementById('userTable')) {
-                $('#userTable').DataTable();
-            }
-        });
-    </script>
+      <!-- Show User Management only if position is ADMIN -->
+      <a th:if="${position == 'ADMIN'}" href="user-management" class="btn btn-warning text-dark">User Management</a>
+    </div>
+
+    <footer class="mt-4">&copy; 2025 iFound. All rights reserved.</footer>
+  </div>
+</section>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

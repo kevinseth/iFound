@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>All Lost Documents</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .table-container {
+      max-width: 1000px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    .img-thumb {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="table-container">
+  <h3 class="mb-4">Submitted Lost Documents</h3>
+
+  <form class="d-flex mb-4" method="get" th:action="@{/lost-documents}">
+    <input type="text" name="keyword" class="form-control me-2" th:value="${keyword}" placeholder="Search by name, type, number, or contact...">
+    <button type="submit" class="btn btn-primary">Filter</button>
+  </form>
+
+  <table id="lostDocsTable" class="table table-striped table-hover">
+   
+  <thead class="table-dark">
+  <tr>
+    <th>Full Name</th>
+    <th>Document Type</th>
+    <th>Number</th>
+    <th>Contact Info</th>
+    <th>Date Lost</th>
+    <th>Date Found</th>
+    <th>Status</th>
+    <th>Image</th>
+    <!-- Hide Actions header if position is USER -->
+    <th th:if="${position != 'USER'}">Actions</th>
+  </tr>
+</thead>
+<tbody>
+  <tr th:each="doc : ${lostDocuments}">
+    <td th:text="${doc.fullName}"></td>
+    <td th:text="${doc.documentType}"></td>
+    <td th:text="${doc.documentNumber}"></td>
+    <td th:text="${doc.contactInfo}"></td>
+    <td th:text="${doc.lostDate}"></td>
+    <td th:text="${doc.foundDate != null ? doc.foundDate : '—'}"></td>
+    <td>
+      <span th:switch="${doc.actionStatus}">
+        <span th:case="'PENDING'" class="badge bg-warning text-dark">Pending</span>
+        <span th:case="'FOUND'" class="badge bg-success">Found</span>
+        <span th:case="*" class="badge bg-secondary" th:text="${doc.actionStatus}">Unknown</span>
+      </span>
+    </td>
+    <td>
+      <img th:if="${doc.imagePath != null}" th:src="@{${doc.imagePath}}" class="img-thumb">
+    </td>
+    <!-- Hide Actions cells if position is USER -->
+   <td th:if="${position != 'USER'}">
+  <form th:action="@{'/mark-found/' + ${doc.id}}" method="post" th:if="${doc.actionStatus == 'PENDING'}">
+    <button type="submit" class="btn btn-sm btn-success">Mark as Found</button>
+  </form>
+
+  <form th:action="@{'/undo-mark-found/' + ${doc.id}}" method="post" th:if="${doc.actionStatus == 'FOUND'}" style="display:inline;">
+    <button type="submit" class="btn btn-sm btn-warning">Undo Mark Found</button>
+  </form>
+
+  <span th:if="${doc.actionStatus != 'PENDING' and doc.actionStatus != 'FOUND'}" class="text-muted">—</span>
+</td>
+
+  </tr>
+
+  <tr th:if="${#lists.isEmpty(lostDocuments)}">
+    <td colspan="9" class="text-center text-muted">No lost documents found for your account.</td>
+  </tr>
+</tbody>
+
+  </table>
+
+  <a href="/" class="btn btn-outline-secondary mt-3">Back to Home</a>
+</div>
+
+<!-- jQuery and DataTables JS -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('#lostDocsTable').DataTable();
+  });
+</script>
+
+</body>
+</html>

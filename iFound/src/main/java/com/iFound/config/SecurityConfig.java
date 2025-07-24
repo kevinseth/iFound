@@ -14,7 +14,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+//import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -38,7 +38,7 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/index", "/css/**", "/js/**", "/api/public/login").permitAll()
+                .requestMatchers("/index", "/css/**", "/js/**", "/api/public/login","/students","/home/","/register","/check-status").permitAll()
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -47,6 +47,15 @@ public class SecurityConfig {
                 .successHandler(successHandler)
                 .failureUrl("/index?error=true")
                 .permitAll()
+            )
+            
+            .logout(logout -> logout
+                    .logoutUrl("/logout") // ✅ handles POST /logout
+                    .logoutSuccessUrl("/index?logout=true")
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID")
+                    .permitAll()
+                    
             )
             .sessionManagement(session -> session
                 .maximumSessions(1)
