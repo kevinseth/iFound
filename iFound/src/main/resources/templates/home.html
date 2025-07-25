@@ -100,9 +100,7 @@
       <a href="report-lost" class="btn btn-danger">Report Lost Document</a>
       <a href="report-found.html" class="btn btn-success">Report Found Document</a>
       <a th:href="@{/check-status}" class="btn btn-info text-white">Check Document Status</a>
-
-      <!-- Show User Management only if position is ADMIN -->
-      <a th:if="${position == 'ADMIN'}" href="user-management" class="btn btn-warning text-dark">User Management</a>
+      <a th:href="user-management" class="btn btn-warning text-dark">User Management</a>
     </div>
 
     <footer class="mt-4">&copy; 2025 iFound. All rights reserved.</footer>

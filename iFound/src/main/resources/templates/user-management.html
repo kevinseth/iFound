@@ -1,100 +1,312 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
 <head>
-    <title>check-status}</title>
-
-    ✅ Include jQuery and DataTables CSS/JS
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+  <meta charset="UTF-8" />
+  <title>User Management</title>
+  <!-- Bootstrap & DataTables CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
 </head>
 <body>
-    <h1>Welcome!</h1>
+<div class="container mt-5">
+  <h2 class="mb-4">User Management</h2>
 
-    <p><strong>JWT Token:</strong> <span th:text="${token}">[token]</span></p>
-    <p><strong>Session ID:</strong> <span th:text="${sessionId}">[session]</span></p>
-    <p>Welcome, <strong th:text="${username}"></strong>!</p>
-    <p><strong>Welcome:</strong> <span th:text="${username}">[username]</span></p>
+  <!-- Add User Button (only visible to ADMINs) -->
+  <button
+    type="button"
+    id="btnAddUser"
+    class="btn btn-success mb-3"
+    data-bs-toggle="modal"
+    data-bs-target="#addUserModal"
+    th:if="${position == 'ADMIN'}"
+  >
+    + Add New User
+  </button>
 
-    ✅ Only show table if users are available
-    <h2 th:if="${users != null}">All Users:</h2>
-<table th:if="${users != null}" id="userTable" class="display">
+  <!-- Users Table -->
+  <table id="userTable" class="display table table-striped">
     <thead>
-        <tr>
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Telephone</th>
-            <th>Position</th>
-            <th>Gender</th>
-            <th>Date of Birth</th>
-            <th>Registration Date</th>
-            <th>Active</th>
-            <th>Role</th>
-        </tr>
+      <tr>
+        <th>#</th>
+        <th>Full Name</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Position</th>
+        <th>Role</th>
+        <th>Active</th>
+        <th>Actions</th>
+      </tr>
     </thead>
     <tbody>
-        <tr th:each="user : ${users}">
-            <td th:text="${user.id}">1</td>
-            <td th:text="${user.firstName}">John</td>
-            <td th:text="${user.lastName}">Doe</td>
-            <td th:text="${user.username}">jdoe</td>
-            <td th:text="${user.email}">john@example.com</td>
-            <td th:text="${user.telephone}">123456789</td>
-            <td th:text="${user.position}">Clerk</td>
-            <td th:text="${user.gender}">MALE</td>
-            <td th:text="${user.dateOfBirth}">2000-01-01</td>
-            <td th:text="${user.registrationDate}">2025-07-24</td>
-            <td th:text="${user.active}">true</td>
-            <td th:text="${user.role}">USER</td>
-        </tr>
+      <tr th:each="user, iter : ${users}">
+        <td th:text="${iter.count}">1</td>
+        <td th:text="${user.firstName + ' ' + user.lastName}">John Doe</td>
+        <td th:text="${user.username}">jdoe</td>
+        <td th:text="${user.email}">john@example.com</td>
+        <td th:text="${user.position}">Clerk</td>
+        <td th:text="${user.role}">USER</td>
+        <td th:text="${user.active}">true</td>
+        <td>
+          <!-- Edit button opens modal and passes data -->
+          <button
+            type="button"
+            class="btn btn-sm btn-primary btnEditUser"
+            data-bs-toggle="modal"
+            data-bs-target="#addUserModal"
+            th:data-id="${user.id}"
+            th:data-firstname="${user.firstName}"
+            th:data-lastname="${user.lastName}"
+            th:data-username="${user.username}"
+            th:data-email="${user.email}"
+            th:data-telephone="${user.telephone}"
+            th:data-position="${user.position}"
+            th:data-gender="${user.gender}"
+            th:data-dateofbirth="${user.dateOfBirth}"
+          >
+            Edit
+          </button>
+
+          <form
+            th:action="@{'/users/delete/' + ${user.id}}"
+            method="post"
+            style="display:inline;"
+            onsubmit="return confirm('Are you sure?');"
+          >
+            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+          </form>
+        </td>
+      </tr>
     </tbody>
-</table>
+  </table>
+</div>
 
+<!-- Modal with Register/Edit Form -->
+<div
+  class="modal fade"
+  id="addUserModal"
+  tabindex="-1"
+  aria-labelledby="addUserModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addUserModalLabel">Register New User</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <form
+          th:object="${user}"
+          method="post"
+          novalidate
+          id="userForm"
+          th:action="@{/register-form}"
+        >
+          <!-- Hidden id and position -->
+          <input type="hidden" id="userId" name="id" />
+          <input type="hidden" id="position" th:value="${position}" />
 
-    <br><br>
-    <!-- <a href="/logout">Logout</a> -->
-    <form th:action="@{/logout}" method="post" style="display:inline;">
-    <input type="submit" value="Logout" class="btn btn-danger">
-    </form>
-    
+          <div class="mb-3">
+            <label for="firstName" class="form-label">First Name *</label>
+            <input
+              type="text"
+              id="firstName"
+              th:field="*{firstName}"
+              class="form-control form-control-sm"
+              placeholder="First Name"
+              required
+            />
+          </div>
 
-    ✅ jQuery and DataTables JS
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+          <div class="mb-3">
+            <label for="lastName" class="form-label">Last Name *</label>
+            <input
+              type="text"
+              id="lastName"
+              th:field="*{lastName}"
+              class="form-control form-control-sm"
+              placeholder="Last Name"
+              required
+            />
+          </div>
 
-    <script>
-        // ✅ Initialize DataTable only if the table exists
-        document.addEventListener("DOMContentLoaded", function () {
-            if (document.getElementById('userTable')) {
-                $('#userTable').DataTable();
-            }
-        });
-    </script>
-    
-<form th:action="@{/register-form}" th:object="${user}" method="post">
-    <input type="text" th:field="*{username}" placeholder="Username" required />
-    <input type="password" th:field="*{password}" placeholder="Password" required />
-    <button type="submit">Register</button>
-</form>
+          <div class="mb-3">
+            <label for="username" class="form-label">Username *</label>
+            <input
+              type="text"
+              id="username"
+              th:field="*{username}"
+              class="form-control form-control-sm"
+              placeholder="Username"
+              required
+            />
+          </div>
 
+          <div class="mb-3">
+            <label for="email" class="form-label">Email *</label>
+            <input
+              type="email"
+              id="email"
+              th:field="*{email}"
+              class="form-control form-control-sm"
+              placeholder="Email"
+              required
+            />
+          </div>
 
+          <div class="mb-3">
+            <label for="telephone" class="form-label">Telephone</label>
+            <input
+              type="tel"
+              id="telephone"
+              th:field="*{telephone}"
+              class="form-control form-control-sm"
+              placeholder="Telephone"
+            />
+          </div>
 
- <form th:action="@{/check-status} "th:object="${user}" method="post">
-    <label>Username:</label>
-    <input type="text" name="username" required />
-    <br>
+          <div class="mb-3">
+            <label for="position" class="form-label">Position *</label>
+            <select
+              id="positionSelect"
+              th:field="*{position}"
+              class="form-select form-select-sm"
+              required
+            >
+              <option value="">Select Position</option>
+              <option value="USER">User</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
 
-    <label>Password:</label>
-    <input type="password" name="password" required />
-    <br>
+          <div class="mb-3">
+            <label for="gender" class="form-label">Gender</label>
+            <select
+              id="gender"
+              th:field="*{gender}"
+              class="form-select form-select-sm"
+            >
+              <option value="">Select Gender</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
 
-    <button type="submit">Create User</button>
-</form>
+          <div class="mb-3">
+            <label for="dateOfBirth" class="form-label">Date of Birth</label>
+            <input
+              type="date"
+              id="dateOfBirth"
+              th:field="*{dateOfBirth}"
+              class="form-control form-control-sm"
+            />
+          </div>
 
+          <div class="mb-3">
+            <label for="password" class="form-label">Password *</label>
+            <input
+              type="password"
+              id="password"
+              th:field="*{password}"
+              class="form-control form-control-sm"
+              placeholder="Password"
+              required
+            />
+          </div>
 
-<br><br>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm Password *</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              th:field="*{confirmPassword}"
+              class="form-control form-control-sm"
+              placeholder="Confirm Password"
+              required
+            />
+          </div>
 
-    
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary btn-sm"
+              data-bs-dismiss="modal"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary btn-sm" id="submitBtn">
+              Register
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    $('#userTable').DataTable();
+
+    $('#btnAddUser').click(function () {
+      $('#addUserModalLabel').text('Register New User');
+      $('#userForm')[0].reset();
+      $('#userId').val('');
+      $('#userForm').attr('action', '/register-form');
+      $('#submitBtn').text('Register');
+
+      // Enable and require password fields
+      $('#username').prop('disabled', false);
+      $('#password').prop('required', true).prop('disabled', false);
+      $('#confirmPassword').prop('required', true).prop('disabled', false);
+    });
+
+    $('.btnEditUser').click(function () {
+      $('#addUserModalLabel').text('Edit User');
+
+      const userId = $(this).data('id');
+      $('#userId').val(userId);
+
+      $('#firstName').val($(this).data('firstname'));
+      $('#lastName').val($(this).data('lastname'));
+      $('#username').val($(this).data('username'));
+      $('#email').val($(this).data('email'));
+      $('#telephone').val($(this).data('telephone'));
+      $('#positionSelect').val($(this).data('position'));
+      $('#gender').val($(this).data('gender'));
+      $('#dateOfBirth').val($(this).data('dateofbirth'));
+
+      $('#userForm').attr('action', '/users/edit/' + userId);
+      $('#submitBtn').text('Update');
+
+      // Not required during editing
+      $('#password').val('').prop('required', false);
+      $('#confirmPassword').val('').prop('required', false);
+
+      // Disable username/password if position is ADMIN
+      const position = $('#position').val();
+      if (position === 'ADMIN') {
+        $('#username').prop('disabled', true);
+        $('#password').prop('disabled', true);
+        $('#confirmPassword').prop('disabled', true);
+      } else {
+        $('#username').prop('disabled', false);
+        $('#password').prop('disabled', false);
+        $('#confirmPassword').prop('disabled', false);
+      }
+    });
+  });
+</script>
 </body>
 </html>
